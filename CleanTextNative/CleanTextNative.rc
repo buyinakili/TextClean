@@ -1,7 +1,7 @@
 #include "resource.h"
 
-IDI_APP ICON "..\\CleanText\\icon.ico"
-1 RT_MANIFEST "..\\CleanText\\app.manifest"
+IDI_APP ICON "icon.ico"
+1 RT_MANIFEST "app.manifest"
 IDR_ICON_SVG RCDATA "..\\icon.svg"
 IDR_CANCEL_SVG RCDATA "..\\ic_public_cancel.svg"
 IDR_COPY_SVG RCDATA "..\\ic_public_copy.svg"

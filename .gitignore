@@ -1,11 +1,17 @@
 ## 构建产物
 bin/
 obj/
+build/
 publish/
 CleanText-publish/
 *.exe
 *.dll
 *.pdb
+
+## C# / WPF 源码（本仓库已切到 C++ 实现）
+*.cs
+*.xaml
+*.csproj
 
 ## .NET / Visual Studio
 *.user
@@ -31,3 +37,7 @@ packages/
 ## 临时文件
 *.tmp
 *.bak
+
+## self-test 输出（每次运行都会覆盖）
+cleantext_selftest.txt
+cleantext_error.log

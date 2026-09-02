@@ -1,9 +1,54 @@
 # CleanText Native
 
-Windows 10/11 x64 的原生 Win32 发布项目。需要安装 Visual Studio 2022 Build Tools 的 C++ 工作负载后，在开发者命令提示符中执行：
+Windows 10/11 x64 的原生 Win32 编译项目。使用 `nanosvg` 把 SVG 资源渲染到 GDI 位图，再叠到 Win32 控件上——整个程序没有第三方运行时依赖，单文件可执行。
+
+## 前置条件
+
+- Windows 10 1809+ / Windows 11
+- Visual Studio 2022 或 Build Tools 2022
+  - 工作负载：**使用 C++ 的桌面开发**
+  - 组件：Windows 11 SDK（或 Windows 10 SDK）
+
+> 如果同时装有多个版本（Enterprise / Professional / Community / BuildTools），脚本会自动按顺序探测并选用第一个。
+
+## 构建
+
+在 **仓库根目录** 或 **`CleanTextNative/`** 目录下执行：
 
 ```bat
-msbuild CleanTextNative.vcxproj /t:Rebuild /p:Configuration=Release /p:Platform=x64
+CleanTextNative\build.bat
 ```
 
-生成文件为 `build\\x64\\Release\\CleanText.exe`。该项目使用静态 MSVC 运行库和 Windows 系统 DLL，不包含 .NET 运行时。
+脚本会：
+
+1. 探测 Visual Studio 2022 安装位置
+2. 调用 `vcvars64.bat` 初始化 MSVC 环境
+3. 调用 MSBuild 编译 `Release|x64`
+4. 产物输出到 `build\x64\Release\CleanText.exe`（约 600 KB，单文件）
+
+## 自检
+
+编译完成后可以跑：
+
+```bat
+build\x64\Release\CleanText.exe --selftest
+```
+
+它会自动模拟几次"清空 `*`"操作，把结果写到 `cleantext_selftest.txt`（在当前工作目录下），然后退出。
+
+## 工程目录说明
+
+```
+CleanTextNative/
+├─ CleanTextNative.vcxproj    # MSBuild 工程
+├─ CleanTextNative.rc          # 资源：icon.ico + app.manifest + 4 个 SVG
+├─ icon.ico                    # 应用图标（IDI_APP）
+├─ app.manifest                # asInvoker + PerMonitorV2 DPI
+├─ main.cpp                    # 入口 + Win32 消息循环
+├─ nanosvg.h                   # SVG 解析（header-only 实现）
+├─ nanosvgrast.h               # SVG 光栅化（header-only 实现）
+├─ resource.h                  # 资源 ID 定义
+└─ build.bat                   # 一键构建脚本
+```
+
+仓库根目录下的 SVG（`icon.svg` / `ic_public_*.svg`）会被 [`CleanTextNative.rc`](CleanTextNative.rc:1) 以 `RCDATA` 形式嵌入，路径是相对 `.rc` 文件的 `..\icon.svg`。
