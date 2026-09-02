@@ -44,7 +44,15 @@ CleanTextNative/
 ├─ CleanTextNative.rc          # 资源：icon.ico + app.manifest + 4 个 SVG
 ├─ icon.ico                    # 应用图标（IDI_APP）
 ├─ app.manifest                # asInvoker + PerMonitorV2 DPI
-├─ main.cpp                    # 入口 + Win32 消息循环
+├─ src/                        # 模块化实现
+│  ├─ main.cpp                 # 启动、消息循环与清理
+│  ├─ app_state.hpp            # 共享 UI 状态
+│  ├─ layout.* / paint.*       # 几何计算与绘制
+│  ├─ svg_renderer.*           # SVG、D2D/D3D/WIC/GDI+ 后端
+│  ├─ icon_theming.*           # 主题颜色解析
+│  ├─ system_integration.*     # 剪贴板、启动项
+│  ├─ win32_window.*           # Win32 消息与子类过程
+│  └─ selftest.*               # --selftest 流程
 ├─ nanosvg.h                   # SVG 解析（header-only 实现）
 ├─ nanosvgrast.h               # SVG 光栅化（header-only 实现）
 ├─ resource.h                  # 资源 ID 定义

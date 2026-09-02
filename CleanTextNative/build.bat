@@ -58,5 +58,16 @@ msbuild CleanTextNative.vcxproj /t:Rebuild ^
     /m /v:minimal
 set "RC=%errorlevel%"
 
+if "%RC%"=="0" (
+    REM 同步产物到仓库根的 CleanText.exe，方便绿色免安装分发
+    copy /y "%REPO_ROOT%\build\x64\Release\CleanText.exe" "%REPO_ROOT%\CleanText.exe" >nul
+    if errorlevel 1 (
+        echo [WARN] 已构建，但同步 CleanText.exe 到仓库根失败。
+        echo [WARN] 产物在：%REPO_ROOT%\build\x64\Release\CleanText.exe
+    ) else (
+        echo [INFO] 已同步 CleanText.exe 到仓库根。
+    )
+)
+
 popd
 endlocal & exit /b %RC%
