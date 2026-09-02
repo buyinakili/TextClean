@@ -1,0 +1,7 @@
+cardsAfterFirstEnter=1
+firstCardText=[this is important text withstars]
+inputAfterFirstEnter=[this is *important* text* with*stars]
+cardsAfterSecondEnter=1
+cardsAfterEmptyEnter=1
+copyClicked=true
+inputAfterClear=[]

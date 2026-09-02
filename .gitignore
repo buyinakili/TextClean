@@ -1,0 +1,33 @@
+## 构建产物
+bin/
+obj/
+publish/
+CleanText-publish/
+*.exe
+*.dll
+*.pdb
+
+## .NET / Visual Studio
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+
+## Rider / 其他 IDE
+.idea/
+
+## 系统文件
+*.log
+Thumbs.db
+.DS_Store
+
+## NuGet
+*.nupkg
+packages/
+
+## 临时文件
+*.tmp
+*.bak
