@@ -39,7 +39,7 @@ namespace ui::layout
         ShowWindow(s.output, s.result.empty() ? SW_HIDE : SW_SHOW);
         if (!s.result.empty())
             MoveWindow(s.output, s.outputRect.left + 10, s.outputRect.top + 8, (s.outputRect.right - s.outputRect.left) - 100, (s.outputRect.bottom - s.outputRect.top) - 16, TRUE);
-        s.clearButton = rect(s.inputRect.right - 48, s.inputRect.bottom - 38, s.inputRect.right - 20, s.inputRect.bottom - 10);
+        s.clearButton = rect(s.inputRect.right - 51, s.inputRect.bottom - 41, s.inputRect.right - 20, s.inputRect.bottom - 10);
         s.copyButton = rect(s.outputRect.right - 51, s.outputRect.bottom - 41, s.outputRect.right - 20, s.outputRect.bottom - 10);
         // 删除按钮放在复制按钮正左侧，与 g_output 右边沿完全分离避免被白底遮挡
         s.deleteButton = rect(s.outputRect.right - 86, s.outputRect.bottom - 41, s.outputRect.right - 55, s.outputRect.bottom - 10);
