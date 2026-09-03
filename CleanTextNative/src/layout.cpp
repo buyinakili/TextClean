@@ -55,7 +55,7 @@ namespace ui::layout
         s.startupCheck = rect(app::kWindowWidth - app::kMargin - 48, s.settingsRect.top + 17, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 35);
         s.topmostCheck = rect(app::kWindowWidth - app::kMargin - 48, s.settingsRect.top + 47, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 65);
         s.colorButton = rect(app::kWindowWidth - app::kMargin - 36, s.settingsRect.top + 75, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 95);
-        s.applyColor = rect(app::kMargin + 242, s.settingsRect.top + 132, app::kMargin + 332, s.settingsRect.top + 158);
+        s.applyColor = rect(0, 0, 0, 0);
         s.presetColors.clear();
         if (s.colorPicker)
             for (int i = 0; i < 5; ++i)

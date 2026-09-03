@@ -12,11 +12,59 @@ namespace win {
 using namespace app;
 static AppState g_state;
 static svg::Renderer* g_renderer{};
+constexpr int kBubbleSize = 56;
+static void hideControlsForBubble()
+{
+    for (HWND control : {g_state.input, g_state.output, g_state.colorInput, g_state.clearOverlay, g_state.copyOverlay, g_state.deleteOverlay})
+        ShowWindow(control, SW_HIDE);
+}
+static void collapseToBubble()
+{
+    RECT bounds{};
+    GetWindowRect(g_state.hwnd, &bounds);
+    g_state.expandedSize = {bounds.right - bounds.left, bounds.bottom - bounds.top};
+    g_state.compact = true;
+    hideControlsForBubble();
+    SetWindowRgn(g_state.hwnd, nullptr, FALSE);
+    DWM_WINDOW_CORNER_PREFERENCE noCorner = DWMWCP_DONOTROUND;
+    DWMNCRENDERINGPOLICY noNonClient = DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(g_state.hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &noCorner, sizeof(noCorner));
+    DwmSetWindowAttribute(g_state.hwnd, DWMWA_NCRENDERING_POLICY, &noNonClient, sizeof(noNonClient));
+    SetWindowLongPtrW(g_state.hwnd, GWL_EXSTYLE, GetWindowLongPtrW(g_state.hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+    SetWindowPos(g_state.hwnd, nullptr, bounds.left, bounds.top, kBubbleSize, kBubbleSize, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    ui::paint::paintCompactLayered(g_state.hwnd, *g_renderer, g_state.theme);
+}
+static void expandFromBubble()
+{
+    DWM_WINDOW_CORNER_PREFERENCE rounded = DWMWCP_ROUND;
+    DWMNCRENDERINGPOLICY useNonClient = DWMNCRP_ENABLED;
+    DwmSetWindowAttribute(g_state.hwnd, DWMWA_NCRENDERING_POLICY, &useNonClient, sizeof(useNonClient));
+    DwmSetWindowAttribute(g_state.hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &rounded, sizeof(rounded));
+    SetWindowLongPtrW(g_state.hwnd, GWL_EXSTYLE, GetWindowLongPtrW(g_state.hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+    g_state.compact = false;
+    SetWindowPos(g_state.hwnd, nullptr, 0, 0, g_state.expandedSize.cx, g_state.expandedSize.cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    ui::layout::compute(g_state, true);
+    ShowWindow(g_state.input, SW_SHOW);
+    ShowWindow(g_state.clearOverlay, GetWindowTextLengthW(g_state.input) ? SW_SHOW : SW_HIDE);
+    SetFocus(g_state.input);
+    InvalidateRect(g_state.hwnd, nullptr, FALSE);
+}
 static int buttonAt(POINT p) { RECT client;GetClientRect(g_state.hwnd,&client);if(client.right>kWindowWidth+8)p.x=int(p.x*double(kWindowWidth)/client.right);if(ui::layout::contains(g_state.settingsButton,p))return Settings;if(ui::layout::contains(g_state.minButton,p))return Minimize;if(ui::layout::contains(g_state.closeButton,p))return Close;if(ui::layout::contains(g_state.clearButton,p)&&GetWindowTextLengthW(g_state.input))return ClearInput;if(ui::layout::contains(g_state.copyButton,p)&&!g_state.result.empty())return CopyOutput;if(ui::layout::contains(g_state.deleteButton,p)&&!g_state.result.empty())return DeleteOutput;if(ui::layout::contains(g_state.colorButton,p))return Color;if(ui::layout::contains(g_state.applyColor,p)&&g_state.colorPicker)return ApplyColor;return None; }
 void processInput(){std::wstring raw=sys::text(g_state.input);if(raw.empty())return;g_state.result.clear();for(wchar_t c:raw)if(c!=L'*')g_state.result+=c;SetWindowTextW(g_state.output,g_state.result.c_str());ui::layout::compute(g_state);SetFocus(g_state.input);}
 static LRESULT CALLBACK actionProc(HWND h,UINT m,WPARAM w,LPARAM l,UINT_PTR,DWORD_PTR){int id=h==g_state.clearOverlay?ClearInput:h==g_state.copyOverlay?CopyOutput:DeleteOutput;if(m==WM_MOUSEMOVE){if(g_state.hot!=id){g_state.hot=id;InvalidateRect(h,nullptr,FALSE);}TRACKMOUSEEVENT t{sizeof(t),TME_LEAVE,h,0};TrackMouseEvent(&t);}if(m==WM_MOUSELEAVE&&g_state.hot==id){g_state.hot=None;InvalidateRect(h,nullptr,FALSE);}if(m==WM_SETCURSOR){SetCursor(LoadCursor(nullptr,IDC_HAND));return TRUE;}return DefSubclassProc(h,m,w,l);}
 static LRESULT CALLBACK editProc(HWND h,UINT m,WPARAM w,LPARAM l,UINT_PTR,DWORD_PTR){if(m==WM_KEYDOWN&&w==VK_RETURN&&!(GetKeyState(VK_SHIFT)&0x8000)){processInput();return 0;}if(m==WM_KEYDOWN&&w==L'A'&&(GetKeyState(VK_CONTROL)&0x8000)){SendMessageW(h,EM_SETSEL,0,-1);return 0;}if(m==WM_CHAR&&w==1)return 0;if(m==WM_MOUSEWHEEL){SendMessageW(h,EM_LINESCROLL,0,-GET_WHEEL_DELTA_WPARAM(w)/WHEEL_DELTA*3);PostMessageW(g_state.hwnd,WM_APP+1,0,0);return 0;}if(m==WM_VSCROLL||m==WM_KEYUP)PostMessageW(g_state.hwnd,WM_APP+1,0,0);return DefSubclassProc(h,m,w,l);}
-static LRESULT CALLBACK wndProc(HWND h,UINT m,WPARAM w,LPARAM l){switch(m){
+static LRESULT CALLBACK wndProc(HWND h,UINT m,WPARAM w,LPARAM l){
+if (g_state.compact) {
+    if (m == WM_PAINT) { PAINTSTRUCT ps{}; BeginPaint(h, &ps); EndPaint(h, &ps); ui::paint::paintCompactLayered(h, *g_renderer, g_state.theme); return 0; }
+    if (m == WM_LBUTTONDOWN) { GetCursorPos(&g_state.bubbleStartCursor); RECT bounds{}; GetWindowRect(h, &bounds); g_state.bubbleStartWindow = {bounds.left, bounds.top}; g_state.bubblePointerDown = true; g_state.bubbleMoved = false; SetCapture(h); return 0; }
+    if (m == WM_MOUSEMOVE && g_state.bubblePointerDown) { POINT cursor{}; GetCursorPos(&cursor); int dx = cursor.x - g_state.bubbleStartCursor.x, dy = cursor.y - g_state.bubbleStartCursor.y; if (dx || dy) { g_state.bubbleMoved = true; SetWindowPos(h, nullptr, g_state.bubbleStartWindow.x + dx, g_state.bubbleStartWindow.y + dy, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE); } return 0; }
+    if (m == WM_LBUTTONUP && g_state.bubblePointerDown) { g_state.bubblePointerDown = false; ReleaseCapture(); if (!g_state.bubbleMoved) expandFromBubble(); return 0; }
+    if (m == WM_SETCURSOR) { SetCursor(LoadCursor(nullptr, IDC_HAND)); return TRUE; }
+    if (m == WM_NCHITTEST) return HTCLIENT;
+}
+if (!g_state.compact && m == WM_LBUTTONDOWN) { POINT p{GET_X_LPARAM(l), GET_Y_LPARAM(l)}; if (ui::layout::contains(g_state.minButton, p)) { collapseToBubble(); return 0; } }
+if (m == WM_COMMAND && (HWND)l == g_state.colorInput && HIWORD(w) == EN_CHANGE && g_state.settings && g_state.colorPicker) { COLORREF color; if (theming::parseColor(sys::text(g_state.colorInput), color)) { g_state.theme = color; InvalidateRect(h, nullptr, FALSE); } return 0; }
+switch(m){
 case WM_CREATE:{g_state.hwnd=h;g_state.font=CreateFontW(-14,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Segoe UI");g_state.titleFont=CreateFontW(-14,0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Segoe UI");g_state.input=CreateWindowExW(0,L"EDIT",L"",WS_CHILD|WS_VISIBLE|WS_VSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,0,0,0,0,h,nullptr,nullptr,nullptr);g_state.output=CreateWindowExW(0,L"EDIT",L"",WS_CHILD|WS_VSCROLL|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY,0,0,0,0,h,nullptr,nullptr,nullptr);g_state.colorInput=CreateWindowExW(0,L"EDIT",L"#2DD4A3",WS_CHILD|ES_AUTOHSCROLL,0,0,0,0,h,nullptr,nullptr,nullptr);g_state.clearOverlay=CreateWindowExW(0,L"BUTTON",L"",WS_CHILD|BS_OWNERDRAW,0,0,0,0,h,(HMENU)1001,nullptr,nullptr);g_state.copyOverlay=CreateWindowExW(0,L"BUTTON",L"",WS_CHILD|BS_OWNERDRAW,0,0,0,0,h,(HMENU)1002,nullptr,nullptr);g_state.deleteOverlay=CreateWindowExW(0,L"BUTTON",L"",WS_CHILD|BS_OWNERDRAW,0,0,0,0,h,(HMENU)1003,nullptr,nullptr);for(HWND control:{g_state.input,g_state.output,g_state.colorInput})SendMessageW(control,WM_SETFONT,(WPARAM)g_state.font,TRUE);ShowScrollBar(g_state.input,SB_VERT,FALSE);ShowScrollBar(g_state.output,SB_VERT,FALSE);SetWindowSubclass(g_state.input,editProc,1,0);SetWindowSubclass(g_state.output,editProc,2,0);SetWindowSubclass(g_state.clearOverlay,actionProc,3,0);SetWindowSubclass(g_state.copyOverlay,actionProc,4,0);SetWindowSubclass(g_state.deleteOverlay,actionProc,5,0);g_state.startup=sys::startupEnabled();ui::layout::compute(g_state,true);return 0;}
 case WM_CTLCOLOREDIT:case WM_CTLCOLORSTATIC:{HDC dc=(HDC)w;SetTextColor(dc,kText);SetBkColor(dc,RGB(255,255,255));return (LRESULT)GetStockObject(WHITE_BRUSH);}case WM_ERASEBKGND:return 1;
 case WM_PAINT:{PAINTSTRUCT ps;HDC dc=BeginPaint(h,&ps);RECT c;GetClientRect(h,&c);HDC mem=CreateCompatibleDC(dc);HBITMAP bmp=CreateCompatibleBitmap(dc,c.right,c.bottom);HGDIOBJ old=SelectObject(mem,bmp);ui::paint::paint(mem,g_state,*g_renderer);BitBlt(dc,0,0,c.right,c.bottom,mem,0,0,SRCCOPY);SelectObject(mem,old);DeleteObject(bmp);DeleteDC(mem);EndPaint(h,&ps);return 0;}

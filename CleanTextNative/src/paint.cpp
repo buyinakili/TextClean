@@ -30,6 +30,63 @@ namespace ui::paint
         Gdiplus::SolidBrush brush(Gdiplus::Color(255, GetRValue(color), GetGValue(color), GetBValue(color)));
         g.FillPath(&brush, &path);
     }
+    void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme)
+    {
+        RECT client{};
+        GetClientRect(hwnd, &client);
+        const int width = client.right, height = client.bottom;
+        if (width <= 0 || height <= 0)
+            return;
+        BITMAPINFO info{};
+        info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        info.bmiHeader.biWidth = width;
+        info.bmiHeader.biHeight = -height;
+        info.bmiHeader.biPlanes = 1;
+        info.bmiHeader.biBitCount = 32;
+        info.bmiHeader.biCompression = BI_RGB;
+        HDC screen = GetDC(nullptr);
+        HDC memory = CreateCompatibleDC(screen);
+        BYTE *bits{};
+        HBITMAP bitmap = CreateDIBSection(screen, &info, DIB_RGB_COLORS, reinterpret_cast<void **>(&bits), nullptr, 0);
+        HGDIOBJ old = SelectObject(memory, bitmap);
+        ZeroMemory(bits, size_t(width) * height * 4);
+        {
+            Gdiplus::Graphics graphics(memory);
+            graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+            graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
+            Gdiplus::SolidBrush brush(Gdiplus::Color(255, 255, 255, 255));
+            graphics.FillEllipse(&brush, 0.0f, 0.0f, static_cast<Gdiplus::REAL>(width), static_cast<Gdiplus::REAL>(height));
+        }
+        renderer.draw(memory, svg::Asset::Logo, layout::rect(11, 11, width - 11, height - 11), theme, true);
+        // UpdateLayeredWindow consumes premultiplied alpha. Explicitly mask every
+        // pixel outside the circle so no ordinary-window backing can show through.
+        const float centerX = width * 0.5f, centerY = height * 0.5f, radius = std::min(width, height) * 0.5f;
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
+            {
+                BYTE *pixel = bits + (size_t(y) * width + x) * 4;
+                float dx = (x + 0.5f) - centerX, dy = (y + 0.5f) - centerY;
+                BYTE mask = static_cast<BYTE>(std::clamp((radius + 0.5f - std::sqrt(dx * dx + dy * dy)) * 255.0f, 0.0f, 255.0f));
+                BYTE oldAlpha = pixel[3], alpha = std::min(oldAlpha, mask);
+                if (oldAlpha && alpha != oldAlpha)
+                {
+                    pixel[0] = BYTE(unsigned(pixel[0]) * alpha / oldAlpha);
+                    pixel[1] = BYTE(unsigned(pixel[1]) * alpha / oldAlpha);
+                    pixel[2] = BYTE(unsigned(pixel[2]) * alpha / oldAlpha);
+                }
+                pixel[3] = alpha;
+            }
+        RECT bounds{};
+        GetWindowRect(hwnd, &bounds);
+        POINT destination{bounds.left, bounds.top}, source{};
+        SIZE size{width, height};
+        BLENDFUNCTION blend{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+        UpdateLayeredWindow(hwnd, screen, &destination, &size, memory, &source, 0, &blend, ULW_ALPHA);
+        SelectObject(memory, old);
+        DeleteObject(bitmap);
+        DeleteDC(memory);
+        ReleaseDC(nullptr, screen);
+    }
 
     void fillRound(HDC dc, RECT r, COLORREF color, int radius, COLORREF stroke)
     {
@@ -123,6 +180,12 @@ namespace ui::paint
     {
         RECT client;
         GetClientRect(s.hwnd, &client);
+        if (s.compact)
+        {
+            fillAntialiasedEllipse(dc, layout::rect(0, 0, client.right, client.bottom), RGB(255, 255, 255));
+            renderer.draw(dc, svg::Asset::Logo, layout::rect(11, 11, client.right - 11, client.bottom - 11), s.theme, true);
+            return;
+        }
         fillRound(dc, layout::rect(0, 0, client.right, client.bottom), RGB(255, 255, 255), 14, kBorder);
         renderer.draw(dc, svg::Asset::Logo, layout::rect(15, 8, 49, 42), s.theme, true);
         auto title = [&](RECT r, int id)
@@ -158,8 +221,6 @@ namespace ui::paint
                 {
                     fillAntialiasedEllipse(dc, s.presetColors[i], colors[i]);
                 }
-                fillAntialiasedRoundRect(dc, s.applyColor, 6, s.theme);
-                text(dc, L"\u5e94\u7528", s.applyColor, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(255, 255, 255), s.font);
             }
         }
         fillRound(dc, s.inputRect, RGB(255, 255, 255), 10, kBorder);

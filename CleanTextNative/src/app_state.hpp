@@ -16,10 +16,12 @@ enum ButtonId { None = 0, Settings = 1, Minimize = 2, Close = 3, ClearInput = 4,
 struct AppState {
     HWND hwnd{}, input{}, output{}, clearOverlay{}, copyOverlay{}, deleteOverlay{}, colorInput{}, dragScroll{};
     HFONT font{}, titleFont{};
-    bool settings = false, topmost = true, startup = false, colorPicker = false, copied = false;
+    bool settings = false, topmost = true, startup = false, colorPicker = false, copied = false, compact = false, bubblePointerDown = false, bubbleMoved = false;
     COLORREF theme = kGreen;
     int hot = None, pressed = None, inputHeight = kInputMin;
     RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{};
+    POINT bubbleStartCursor{}, bubbleStartWindow{};
+    SIZE expandedSize{};
     std::vector<RECT> presetColors;
     std::wstring result;
 };
