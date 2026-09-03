@@ -55,7 +55,7 @@ namespace ui::paint
                    (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
     }
     static COLORREF surface(const AppState &s) { return s.darkMode ? RGB(31, 35, 40) : RGB(255, 255, 255); }
-    void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme)
+    void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme, bool darkMode)
     {
         RECT client{};
         GetClientRect(hwnd, &client);
@@ -79,7 +79,7 @@ namespace ui::paint
             Gdiplus::Graphics graphics(memory);
             graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
             graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
-            Gdiplus::SolidBrush brush(Gdiplus::Color(255, 255, 255, 255));
+            Gdiplus::SolidBrush brush(darkMode ? Gdiplus::Color(255, 31, 35, 40) : Gdiplus::Color(255, 255, 255, 255));
             graphics.FillEllipse(&brush, 0.0f, 0.0f, static_cast<Gdiplus::REAL>(width), static_cast<Gdiplus::REAL>(height));
         }
         renderer.draw(memory, svg::Asset::Logo, layout::rect(11, 11, width - 11, height - 11), theme, true);
@@ -190,24 +190,13 @@ namespace ui::paint
         RECT knob = layout::rect(x, r.top + 2, x + d_inner, r.bottom - 2);
         fillAntialiasedEllipse(dc, knob, RGB(255, 255, 255));
     }
-    static void headerClose(HDC dc, RECT r)
-    {
-        HPEN p = CreatePen(PS_SOLID, 2, RGB(113, 129, 122));
-        HGDIOBJ o = SelectObject(dc, p);
-        MoveToEx(dc, r.left + 9, r.top + 8, nullptr);
-        LineTo(dc, r.right - 9, r.bottom - 8);
-        MoveToEx(dc, r.right - 9, r.top + 8, nullptr);
-        LineTo(dc, r.left + 9, r.bottom - 8);
-        SelectObject(dc, o);
-        DeleteObject(p);
-    }
     void paint(HDC dc, AppState &s, svg::Renderer &renderer)
     {
         RECT client;
         GetClientRect(s.hwnd, &client);
         if (s.compact)
         {
-            fillAntialiasedEllipse(dc, layout::rect(0, 0, client.right, client.bottom), RGB(255, 255, 255));
+            fillAntialiasedEllipse(dc, layout::rect(0, 0, client.right, client.bottom), surface(s));
             renderer.draw(dc, svg::Asset::Logo, layout::rect(11, 11, client.right - 11, client.bottom - 11), s.theme, true);
             return;
         }
@@ -227,8 +216,8 @@ namespace ui::paint
         renderer.draw(dc, svg::Asset::DarkMode, layout::rect((s.darkModeButton.left + s.darkModeButton.right) / 2 - 12, (s.darkModeButton.top + s.darkModeButton.bottom) / 2 - 12, (s.darkModeButton.left + s.darkModeButton.right) / 2 + 12, (s.darkModeButton.top + s.darkModeButton.bottom) / 2 + 12), fixedIcon, true);
         renderer.draw(dc, svg::Asset::Info, iconBox(s.infoButton), fixedIcon, true);
         renderer.draw(dc, svg::Asset::Settings, iconBox(s.settingsButton), fixedIcon, true);
-        text(dc, L"\u2013", s.minButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
-        headerClose(dc, s.closeButton);
+        renderer.draw(dc, svg::Asset::Reduce, iconBox(s.minButton), fixedIcon, true);
+        renderer.draw(dc, svg::Asset::Cancel, iconBox(s.closeButton), fixedIcon, true);
         if (s.infoPage)
         {
             text(dc, L"相关信息", layout::rect(app::kMargin, 62, app::kWindowWidth - app::kMargin, 84), DT_SINGLELINE | DT_VCENTER, pageText, s.titleFont);
