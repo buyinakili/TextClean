@@ -222,6 +222,19 @@ namespace ui::paint
                     fillAntialiasedEllipse(dc, s.presetColors[i], colors[i]);
                 }
             }
+            const int filterLabelTop = s.settingsRect.top + (s.colorPicker ? 166 : 104);
+            text(dc, L"过滤内容", layout::rect(s.settingsRect.left + 16, filterLabelTop, s.settingsRect.right - 16, filterLabelTop + 18), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+            for (size_t i = 0; i < s.filters.size(); ++i)
+            {
+                const auto &item = s.filters[i];
+                fillRound(dc, item.button, item.selected ? RGB(217, 247, 229) : RGB(255, 255, 255), 6, kBorder);
+                text(dc, item.text.c_str(), layout::rect(item.button.left + 8, item.button.top, item.button.right - (item.builtin ? 8 : 16), item.button.bottom), DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, kText, s.font);
+                if (!item.builtin && s.hotFilter == static_cast<int>(i))
+                {
+                    fillAntialiasedEllipse(dc, item.deleteButton, RGB(255, 255, 255));
+                    text(dc, L"×", item.deleteButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
+                }
+            }
         }
         fillRound(dc, s.inputRect, RGB(255, 255, 255), 10, kBorder);
         if (GetWindowTextLengthW(s.input) > 0)

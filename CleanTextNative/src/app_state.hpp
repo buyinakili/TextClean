@@ -13,16 +13,25 @@ constexpr COLORREF kText = RGB(30, 42, 38);
 
 enum ButtonId { None = 0, Settings = 1, Minimize = 2, Close = 3, ClearInput = 4, CopyOutput = 5, Color = 6, ApplyColor = 7, DeleteOutput = 8 };
 
+struct FilterItem {
+    std::wstring text;
+    bool selected = false;
+    bool builtin = false;
+    RECT button{};
+    RECT deleteButton{};
+};
+
 struct AppState {
-    HWND hwnd{}, input{}, output{}, clearOverlay{}, copyOverlay{}, deleteOverlay{}, colorInput{}, dragScroll{};
+    HWND hwnd{}, input{}, output{}, clearOverlay{}, copyOverlay{}, deleteOverlay{}, colorInput{}, filterInput{}, dragScroll{};
     HFONT font{}, titleFont{};
     bool settings = false, topmost = true, startup = false, colorPicker = false, copied = false, compact = false, bubblePointerDown = false, bubbleMoved = false;
     COLORREF theme = kGreen;
-    int hot = None, pressed = None, inputHeight = kInputMin;
-    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{};
+    int hot = None, pressed = None, inputHeight = kInputMin, hotFilter = -1;
+    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{}, filterInputRect{};
     POINT bubbleStartCursor{}, bubbleStartWindow{};
     SIZE expandedSize{};
     std::vector<RECT> presetColors;
+    std::vector<FilterItem> filters{{L"*", true, true}, {L"#", false, true}, {L"\\", false, true}};
     std::wstring result;
 };
 }

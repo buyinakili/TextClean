@@ -14,7 +14,31 @@ namespace ui::layout
         int inputH = heightFor(s.input, app::kInputMin, app::kInputMax), y = app::kHeaderHeight;
         if (s.settings)
         {
-            int settingsH = s.colorPicker ? 184 : 104;
+            int settingsH = 104;
+            {
+                int itemX = app::kMargin + 16;
+                int itemY = y + (s.colorPicker ? 192 : 130);
+                constexpr int itemHeight = 28, itemGap = 6, inputWidth = 138;
+                for (auto &item : s.filters)
+                {
+                    int width = item.builtin ? 32 : std::clamp(28 + int(item.text.size()) * 14, 48, 128);
+                    if (itemX + width > app::kWindowWidth - app::kMargin - 16)
+                    {
+                        itemX = app::kMargin + 16;
+                        itemY += itemHeight + itemGap;
+                    }
+                    item.button = rect(itemX, itemY, itemX + width, itemY + itemHeight);
+                    item.deleteButton = item.builtin ? rect(0, 0, 0, 0) : rect(item.button.right - 13, item.button.top + 2, item.button.right - 2, item.button.top + 13);
+                    itemX += width + itemGap;
+                }
+                if (itemX + inputWidth > app::kWindowWidth - app::kMargin - 16)
+                {
+                    itemX = app::kMargin + 16;
+                    itemY += itemHeight + itemGap;
+                }
+                s.filterInputRect = rect(itemX, itemY, itemX + inputWidth, itemY + itemHeight);
+                settingsH = s.filterInputRect.bottom - y + 16;
+            }
             s.settingsRect = rect(app::kMargin, y, app::kWindowWidth - app::kMargin, y + settingsH);
             y += settingsH + 8;
         }
@@ -65,6 +89,12 @@ namespace ui::layout
             ShowWindow(s.colorInput, s.settings && s.colorPicker ? SW_SHOW : SW_HIDE);
             if (s.settings && s.colorPicker)
                 MoveWindow(s.colorInput, app::kMargin + 48, s.settingsRect.top + 134, 180, 24, TRUE);
+        }
+        if (s.filterInput)
+        {
+            ShowWindow(s.filterInput, s.settings ? SW_SHOW : SW_HIDE);
+            if (s.settings)
+                MoveWindow(s.filterInput, s.filterInputRect.left, s.filterInputRect.top, s.filterInputRect.right - s.filterInputRect.left, s.filterInputRect.bottom - s.filterInputRect.top, TRUE);
         }
         s.inputHeight = inputH;
         InvalidateRect(s.hwnd, nullptr, FALSE);
