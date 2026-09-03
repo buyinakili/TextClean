@@ -204,7 +204,7 @@ namespace ui::paint
         renderer.draw(dc, svg::Asset::Logo, layout::rect(15, 8, 49, 42), s.theme, true);
         auto title = [&](RECT r, int id)
         {
-            fillRound(dc, r, s.hot == id ? (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237)) : surface(s), 6);
+            fillRound(dc, r, s.hot == id ? (s.darkMode ? (s.pressed == id ? RGB(38, 53, 49) : RGB(49, 69, 63)) : (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237))) : surface(s), 6);
         };
         title(s.darkModeButton, DarkMode);
         title(s.infoButton, Info);
@@ -291,7 +291,8 @@ namespace ui::paint
             renderer.draw(dc, svg::Asset::Copy, s.copyButton, s.theme, true);
             if (s.copied)
             {
-                RECT tip = layout::rect(s.outputRect.right - 122, s.outputRect.top + 8, s.outputRect.right - 64, s.outputRect.top + 30);
+                const int copyCenter = (s.copyButton.left + s.copyButton.right) / 2;
+                RECT tip = layout::rect(copyCenter - 29, s.copyButton.top - 30, copyCenter + 29, s.copyButton.top - 8);
                 fillAntialiasedRoundRect(dc, tip, 8, s.theme);
                 text(dc, L"\u5df2\u590d\u5236", tip, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(255, 255, 255), s.font);
             }
