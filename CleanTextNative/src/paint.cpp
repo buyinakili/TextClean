@@ -182,13 +182,13 @@ namespace ui::paint
         InvalidateRect(s.hwnd, &card, FALSE);
     }
     // 抗锯齿 toggle 开关：圆角矩形底 + 圆形滑块
-    static void toggle(HDC dc, RECT r, bool on, COLORREF accent)
+    static void toggle(HDC dc, RECT r, bool on, COLORREF accent, bool darkMode)
     {
-        fillAntialiasedRoundRect(dc, r, 18, on ? accent : RGB(200, 211, 206));
+        fillAntialiasedRoundRect(dc, r, 18, on ? accent : (darkMode ? RGB(60, 70, 74) : RGB(200, 211, 206)));
         int d_inner = r.bottom - r.top - 4;
         int x = on ? r.right - d_inner - 2 : r.left + 2;
         RECT knob = layout::rect(x, r.top + 2, x + d_inner, r.bottom - 2);
-        fillAntialiasedEllipse(dc, knob, RGB(255, 255, 255));
+        fillAntialiasedEllipse(dc, knob, darkMode ? RGB(190, 201, 197) : RGB(255, 255, 255));
     }
     void paint(HDC dc, AppState &s, svg::Renderer &renderer)
     {
@@ -241,11 +241,11 @@ namespace ui::paint
             text(dc, L"\u5f00\u673a\u81ea\u542f\u52a8",
                  layout::rect(s.settingsRect.left + 16, s.startupCheck.top - 2, s.startupCheck.left - 14, s.startupCheck.bottom + 3),
                  DT_SINGLELINE | DT_VCENTER, pageText, s.font);
-            toggle(dc, s.startupCheck, s.startup, s.theme);
+            toggle(dc, s.startupCheck, s.startup, s.theme, s.darkMode);
             text(dc, L"\u60ac\u6d6e\u5728\u6700\u4e0a\u5c42",
                  layout::rect(s.settingsRect.left + 16, s.topmostCheck.top - 2, s.topmostCheck.left - 14, s.topmostCheck.bottom + 3),
                  DT_SINGLELINE | DT_VCENTER, pageText, s.font);
-            toggle(dc, s.topmostCheck, s.topmost, s.theme);
+            toggle(dc, s.topmostCheck, s.topmost, s.theme, s.darkMode);
             // 主题色按钮 - GDI+ 抗锯齿
             fillAntialiasedEllipse(dc, s.colorButton, s.theme);
             text(dc, L"\u4e3b\u9898\u989c\u8272",
