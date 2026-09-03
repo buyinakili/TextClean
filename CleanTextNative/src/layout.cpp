@@ -11,6 +11,7 @@ namespace ui::layout
     }
     void compute(app::AppState &s, bool force)
     {
+        s.darkModeButton = rect(app::kWindowWidth - 179, 13, app::kWindowWidth - 146, 39);
         s.infoButton = rect(app::kWindowWidth - 142, 13, app::kWindowWidth - 112, 39);
         s.settingsButton = rect(app::kWindowWidth - 108, 13, app::kWindowWidth - 78, 39);
         s.minButton = rect(app::kWindowWidth - 74, 13, app::kWindowWidth - 44, 39);

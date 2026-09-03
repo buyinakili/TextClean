@@ -54,6 +54,7 @@ namespace ui::paint
                    (GetGValue(color) * themeWeight + 255 * whiteWeight) / 100,
                    (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
     }
+    static COLORREF surface(const AppState &s) { return s.darkMode ? RGB(31, 35, 40) : RGB(255, 255, 255); }
     void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme)
     {
         RECT client{};
@@ -210,53 +211,57 @@ namespace ui::paint
             renderer.draw(dc, svg::Asset::Logo, layout::rect(11, 11, client.right - 11, client.bottom - 11), s.theme, true);
             return;
         }
-        fillRound(dc, layout::rect(0, 0, client.right, client.bottom), RGB(255, 255, 255), 14, kBorder);
+        fillRound(dc, layout::rect(0, 0, client.right, client.bottom), surface(s), 14, kBorder);
         renderer.draw(dc, svg::Asset::Logo, layout::rect(15, 8, 49, 42), s.theme, true);
         auto title = [&](RECT r, int id)
         {
-            fillRound(dc, r, s.hot == id ? (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237)) : RGB(255, 255, 255), 6);
+            fillRound(dc, r, s.hot == id ? (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237)) : surface(s), 6);
         };
+        title(s.darkModeButton, DarkMode);
         title(s.infoButton, Info);
         title(s.settingsButton, Settings);
         title(s.minButton, Minimize);
         title(s.closeButton, Close);
-        renderer.draw(dc, svg::Asset::Info, iconBox(s.infoButton), RGB(0, 0, 0), false);
-        renderer.draw(dc, svg::Asset::Settings, iconBox(s.settingsButton), s.theme, false);
+        const COLORREF fixedIcon = s.darkMode ? RGB(255, 255, 255) : RGB(0, 0, 0);
+        const COLORREF pageText = s.darkMode ? RGB(255, 255, 255) : kText;
+        renderer.draw(dc, svg::Asset::DarkMode, layout::rect((s.darkModeButton.left + s.darkModeButton.right) / 2 - 12, (s.darkModeButton.top + s.darkModeButton.bottom) / 2 - 12, (s.darkModeButton.left + s.darkModeButton.right) / 2 + 12, (s.darkModeButton.top + s.darkModeButton.bottom) / 2 + 12), fixedIcon, true);
+        renderer.draw(dc, svg::Asset::Info, iconBox(s.infoButton), fixedIcon, true);
+        renderer.draw(dc, svg::Asset::Settings, iconBox(s.settingsButton), fixedIcon, true);
         text(dc, L"\u2013", s.minButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
         headerClose(dc, s.closeButton);
         if (s.infoPage)
         {
-            text(dc, L"相关信息", layout::rect(app::kMargin, 62, app::kWindowWidth - app::kMargin, 84), DT_SINGLELINE | DT_VCENTER, kText, s.titleFont);
-            text(dc, L"版本：v1.0.0", layout::rect(app::kMargin, 84, app::kWindowWidth - app::kMargin, 106), DT_SINGLELINE | DT_VCENTER, kText, s.font);
-            text(dc, L"这是一个免费软件，如果你是付费获取的，说明你被骗了", layout::rect(app::kMargin, 108, app::kWindowWidth - app::kMargin, 156), DT_WORDBREAK | DT_LEFT, kText, s.font);
-            text(dc, L"作者：nakili", layout::rect(app::kMargin, 162, app::kWindowWidth - app::kMargin, 184), DT_SINGLELINE | DT_VCENTER, kText, s.font);
-            renderer.draw(dc, svg::Asset::Bilibili, layout::rect(s.bilibiliLink.left + 8, s.bilibiliLink.top + 8, s.bilibiliLink.left + 32, s.bilibiliLink.top + 32), RGB(0, 0, 0), false);
-            renderer.draw(dc, svg::Asset::Github, layout::rect(s.githubLink.left + 8, s.githubLink.top + 8, s.githubLink.left + 32, s.githubLink.top + 32), RGB(0, 0, 0), false);
-            fillRound(dc, s.supportButton, s.hot == Support ? lightTheme(s.theme) : RGB(255, 255, 255), 6, settingsBorder(s.theme));
-            text(dc, L"支持净文", s.supportButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, kText, s.font);
+            text(dc, L"相关信息", layout::rect(app::kMargin, 62, app::kWindowWidth - app::kMargin, 84), DT_SINGLELINE | DT_VCENTER, pageText, s.titleFont);
+            text(dc, L"版本：v1.0.0", layout::rect(app::kMargin, 84, app::kWindowWidth - app::kMargin, 106), DT_SINGLELINE | DT_VCENTER, pageText, s.font);
+            text(dc, L"这是一个免费软件，如果你是付费获取的，说明你被骗了", layout::rect(app::kMargin, 108, app::kWindowWidth - app::kMargin, 156), DT_WORDBREAK | DT_LEFT, pageText, s.font);
+            text(dc, L"作者：nakili", layout::rect(app::kMargin, 162, app::kWindowWidth - app::kMargin, 184), DT_SINGLELINE | DT_VCENTER, pageText, s.font);
+            renderer.draw(dc, svg::Asset::Bilibili, layout::rect(s.bilibiliLink.left + 8, s.bilibiliLink.top + 8, s.bilibiliLink.left + 32, s.bilibiliLink.top + 32), fixedIcon, true);
+            renderer.draw(dc, svg::Asset::Github, layout::rect(s.githubLink.left + 8, s.githubLink.top + 8, s.githubLink.left + 32, s.githubLink.top + 32), fixedIcon, true);
+            fillRound(dc, s.supportButton, s.hot == Support ? lightTheme(s.theme) : surface(s), 6, settingsBorder(s.theme));
+            text(dc, L"支持净文", s.supportButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, pageText, s.font);
             if (s.supportOpen)
             {
-                text(dc, L"如果喜欢净文，可以请作者喝一杯咖啡", layout::rect(app::kMargin, 292, app::kWindowWidth - app::kMargin, 314), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+                text(dc, L"如果喜欢净文，可以请作者喝一杯咖啡", layout::rect(app::kMargin, 292, app::kWindowWidth - app::kMargin, 314), DT_SINGLELINE | DT_VCENTER, pageText, s.font);
                 renderer.drawPayment(dc, s.paymentImage);
             }
             return;
         }
         if (s.settings)
         {
-            fillRound(dc, s.settingsRect, settingsTheme(s.theme), 10, settingsBorder(s.theme));
+            fillRound(dc, s.settingsRect, s.darkMode ? surface(s) : settingsTheme(s.theme), 10, settingsBorder(s.theme));
             text(dc, L"\u5f00\u673a\u81ea\u542f\u52a8",
                  layout::rect(s.settingsRect.left + 16, s.startupCheck.top - 2, s.startupCheck.left - 14, s.startupCheck.bottom + 3),
-                 DT_SINGLELINE | DT_VCENTER, kText, s.font);
+                 DT_SINGLELINE | DT_VCENTER, pageText, s.font);
             toggle(dc, s.startupCheck, s.startup, s.theme);
             text(dc, L"\u60ac\u6d6e\u5728\u6700\u4e0a\u5c42",
                  layout::rect(s.settingsRect.left + 16, s.topmostCheck.top - 2, s.topmostCheck.left - 14, s.topmostCheck.bottom + 3),
-                 DT_SINGLELINE | DT_VCENTER, kText, s.font);
+                 DT_SINGLELINE | DT_VCENTER, pageText, s.font);
             toggle(dc, s.topmostCheck, s.topmost, s.theme);
             // 主题色按钮 - GDI+ 抗锯齿
             fillAntialiasedEllipse(dc, s.colorButton, s.theme);
             text(dc, L"\u4e3b\u9898\u989c\u8272",
                  layout::rect(s.settingsRect.left + 16, s.colorButton.top - 2, s.colorButton.left - 14, s.colorButton.bottom + 3),
-                 DT_SINGLELINE | DT_VCENTER, kText, s.font);
+                 DT_SINGLELINE | DT_VCENTER, pageText, s.font);
             if (s.colorPicker)
             {
                 static constexpr COLORREF colors[] = {RGB(45, 212, 163), RGB(66, 133, 244), RGB(154, 102, 255), RGB(245, 140, 66), RGB(235, 87, 87)};
@@ -264,36 +269,36 @@ namespace ui::paint
                 {
                     fillAntialiasedEllipse(dc, s.presetColors[i], colors[i]);
                 }
-                fillRound(dc, s.colorInputRect, RGB(255, 255, 255), 4, settingsBorder(s.theme));
+                fillRound(dc, s.colorInputRect, surface(s), 4, settingsBorder(s.theme));
             }
             const int filterLabelTop = s.settingsRect.top + (s.colorPicker ? 166 : 104);
-            text(dc, L"过滤内容", layout::rect(s.settingsRect.left + 16, filterLabelTop, s.settingsRect.right - 16, filterLabelTop + 18), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+            text(dc, L"过滤内容", layout::rect(s.settingsRect.left + 16, filterLabelTop, s.settingsRect.right - 16, filterLabelTop + 18), DT_SINGLELINE | DT_VCENTER, pageText, s.font);
             for (size_t i = 0; i < s.filters.size(); ++i)
             {
                 const auto &item = s.filters[i];
-                fillRound(dc, item.button, item.selected ? lightTheme(s.theme) : RGB(255, 255, 255), 6, settingsBorder(s.theme));
-                text(dc, item.text.c_str(), layout::rect(item.button.left + 8, item.button.top, item.button.right - (item.builtin ? 8 : 16), item.button.bottom), DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, kText, s.font);
+                fillRound(dc, item.button, s.darkMode ? surface(s) : (item.selected ? lightTheme(s.theme) : RGB(255, 255, 255)), 6, settingsBorder(s.theme));
+                text(dc, item.text.c_str(), layout::rect(item.button.left + 8, item.button.top, item.button.right - (item.builtin ? 8 : 16), item.button.bottom), DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, pageText, s.font);
                 if (!item.builtin && s.hotFilter == static_cast<int>(i))
                 {
                     fillAntialiasedEllipse(dc, item.deleteButton, RGB(255, 255, 255));
                     text(dc, L"×", item.deleteButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
                 }
             }
-            fillRound(dc, s.filterInputRect, RGB(255, 255, 255), 4, settingsBorder(s.theme));
+            fillRound(dc, s.filterInputRect, surface(s), 4, settingsBorder(s.theme));
         }
-        fillRound(dc, s.inputRect, RGB(255, 255, 255), 10, settingsBorder(s.theme));
+        fillRound(dc, s.inputRect, surface(s), 10, settingsBorder(s.theme));
         if (GetWindowTextLengthW(s.input) > 0)
         {
-            fillRound(dc, s.clearButton, s.hot == ClearInput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
+            fillRound(dc, s.clearButton, s.darkMode ? surface(s) : (s.hot == ClearInput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
             renderer.draw(dc, svg::Asset::Cancel, s.clearButton, s.theme, true);
         }
         paintScroll(dc, s, s.input, s.inputRect);
         if (!s.result.empty())
         {
-            fillRound(dc, s.outputRect, RGB(255, 255, 255), 10, settingsBorder(s.theme));
-            fillRound(dc, s.deleteButton, s.hot == DeleteOutput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
+            fillRound(dc, s.outputRect, surface(s), 10, settingsBorder(s.theme));
+            fillRound(dc, s.deleteButton, s.darkMode ? surface(s) : (s.hot == DeleteOutput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
             renderer.draw(dc, svg::Asset::Cancel, s.deleteButton, s.theme, true);
-            fillRound(dc, s.copyButton, s.hot == CopyOutput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
+            fillRound(dc, s.copyButton, s.darkMode ? surface(s) : (s.hot == CopyOutput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
             renderer.draw(dc, svg::Asset::Copy, s.copyButton, s.theme, true);
             if (s.copied)
             {

@@ -1,7 +1,7 @@
 #pragma once
 #include "win32_base.hpp"
 namespace svg {
-enum class Asset { Logo, Cancel, Copy, Settings, Info, Bilibili, Github };
+enum class Asset { Logo, Cancel, Copy, Settings, Info, Bilibili, Github, DarkMode };
 class Renderer {
 public:
     struct Impl;
