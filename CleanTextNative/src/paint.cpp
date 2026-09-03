@@ -134,7 +134,7 @@ namespace ui::paint
     static RECT iconBox(const RECT &r)
     {
         int cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
-        return layout::rect(cx - 12, cy - 12, cx + 12, cy + 12);
+        return layout::rect(cx - 11, cy - 11, cx + 11, cy + 11);
     }
     RECT scrollTrack(const RECT &card)
     {
@@ -216,12 +216,31 @@ namespace ui::paint
         {
             fillRound(dc, r, s.hot == id ? (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237)) : RGB(255, 255, 255), 6);
         };
+        title(s.infoButton, Info);
         title(s.settingsButton, Settings);
         title(s.minButton, Minimize);
         title(s.closeButton, Close);
+        renderer.draw(dc, svg::Asset::Info, iconBox(s.infoButton), RGB(0, 0, 0), false);
         renderer.draw(dc, svg::Asset::Settings, iconBox(s.settingsButton), s.theme, false);
         text(dc, L"\u2013", s.minButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
         headerClose(dc, s.closeButton);
+        if (s.infoPage)
+        {
+            text(dc, L"相关信息", layout::rect(app::kMargin, 62, app::kWindowWidth - app::kMargin, 84), DT_SINGLELINE | DT_VCENTER, kText, s.titleFont);
+            text(dc, L"版本：v1.0.0", layout::rect(app::kMargin, 84, app::kWindowWidth - app::kMargin, 106), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+            text(dc, L"这是一个免费软件，如果你是付费获取的，说明你被骗了", layout::rect(app::kMargin, 108, app::kWindowWidth - app::kMargin, 156), DT_WORDBREAK | DT_LEFT, kText, s.font);
+            text(dc, L"作者：nakili", layout::rect(app::kMargin, 162, app::kWindowWidth - app::kMargin, 184), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+            renderer.draw(dc, svg::Asset::Bilibili, layout::rect(s.bilibiliLink.left + 8, s.bilibiliLink.top + 8, s.bilibiliLink.left + 32, s.bilibiliLink.top + 32), RGB(0, 0, 0), false);
+            renderer.draw(dc, svg::Asset::Github, layout::rect(s.githubLink.left + 8, s.githubLink.top + 8, s.githubLink.left + 32, s.githubLink.top + 32), RGB(0, 0, 0), false);
+            fillRound(dc, s.supportButton, s.hot == Support ? lightTheme(s.theme) : RGB(255, 255, 255), 6, settingsBorder(s.theme));
+            text(dc, L"支持净文", s.supportButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, kText, s.font);
+            if (s.supportOpen)
+            {
+                text(dc, L"如果喜欢净文，可以请作者喝一杯咖啡", layout::rect(app::kMargin, 292, app::kWindowWidth - app::kMargin, 314), DT_SINGLELINE | DT_VCENTER, kText, s.font);
+                renderer.drawPayment(dc, s.paymentImage);
+            }
+            return;
+        }
         if (s.settings)
         {
             fillRound(dc, s.settingsRect, settingsTheme(s.theme), 10, settingsBorder(s.theme));

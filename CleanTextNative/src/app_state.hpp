@@ -11,7 +11,7 @@ constexpr COLORREF kBorder = RGB(220, 232, 227);
 constexpr COLORREF kSoft = RGB(239, 249, 245);
 constexpr COLORREF kText = RGB(30, 42, 38);
 
-enum ButtonId { None = 0, Settings = 1, Minimize = 2, Close = 3, ClearInput = 4, CopyOutput = 5, Color = 6, ApplyColor = 7, DeleteOutput = 8 };
+enum ButtonId { None = 0, Settings = 1, Minimize = 2, Close = 3, ClearInput = 4, CopyOutput = 5, Color = 6, ApplyColor = 7, DeleteOutput = 8, Info = 9, Announcement = 10, Bilibili = 11, Github = 12, Support = 13 };
 
 struct FilterItem {
     std::wstring text;
@@ -24,10 +24,10 @@ struct FilterItem {
 struct AppState {
     HWND hwnd{}, input{}, output{}, clearOverlay{}, copyOverlay{}, deleteOverlay{}, colorInput{}, filterInput{}, dragScroll{};
     HFONT font{}, titleFont{};
-    bool settings = false, topmost = true, startup = false, colorPicker = false, copied = false, compact = false, bubblePointerDown = false, bubbleMoved = false;
+    bool settings = false, infoPage = false, announcementOpen = false, supportOpen = false, topmost = true, startup = false, colorPicker = false, copied = false, compact = false, bubblePointerDown = false, bubbleMoved = false;
     COLORREF theme = kGreen;
     int hot = None, pressed = None, inputHeight = kInputMin, hotFilter = -1;
-    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{}, colorInputRect{}, filterInputRect{};
+    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, infoButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{}, colorInputRect{}, filterInputRect{}, announcementButton{}, bilibiliLink{}, githubLink{}, supportButton{}, paymentImage{};
     POINT bubbleStartCursor{}, bubbleStartWindow{};
     SIZE expandedSize{};
     std::vector<RECT> presetColors;

@@ -11,6 +11,25 @@ namespace ui::layout
     }
     void compute(app::AppState &s, bool force)
     {
+        s.infoButton = rect(app::kWindowWidth - 142, 13, app::kWindowWidth - 112, 39);
+        s.settingsButton = rect(app::kWindowWidth - 108, 13, app::kWindowWidth - 78, 39);
+        s.minButton = rect(app::kWindowWidth - 74, 13, app::kWindowWidth - 44, 39);
+        s.closeButton = rect(app::kWindowWidth - 40, 13, app::kWindowWidth - 10, 39);
+        if (s.infoPage)
+        {
+            s.settingsRect = s.inputRect = s.outputRect = rect(0, 0, 0, 0);
+            s.announcementButton = rect(0, 0, 0, 0);
+            s.bilibiliLink = rect(app::kMargin, 198, app::kMargin + 40, 238);
+            s.githubLink = rect(app::kMargin + 46, 198, app::kMargin + 86, 238);
+            s.supportButton = rect(app::kMargin, 248, app::kMargin + 112, 280);
+            s.paymentImage = rect(40, 324, 360, 644);
+            for (HWND control : {s.input, s.output, s.colorInput, s.filterInput, s.clearOverlay, s.copyOverlay, s.deleteOverlay}) if (control) ShowWindow(control, SW_HIDE);
+            const int clientH = s.supportOpen ? 660 : 300;
+            RECT client{}; GetClientRect(s.hwnd, &client);
+            if (force || client.bottom != clientH) SetWindowPos(s.hwnd, nullptr, 0, 0, app::kWindowWidth, clientH, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+            InvalidateRect(s.hwnd, nullptr, FALSE);
+            return;
+        }
         int inputH = heightFor(s.input, app::kInputMin, app::kInputMax), y = app::kHeaderHeight;
         if (s.settings)
         {
@@ -59,6 +78,7 @@ namespace ui::layout
         GetClientRect(s.hwnd, &client);
         if (force || client.bottom != clientH)
             SetWindowPos(s.hwnd, nullptr, 0, 0, app::kWindowWidth, clientH, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+        ShowWindow(s.input, SW_SHOW);
         MoveWindow(s.input, s.inputRect.left + 9, s.inputRect.top + 7, (s.inputRect.right - s.inputRect.left) - 78, (s.inputRect.bottom - s.inputRect.top) - 14, TRUE);
         ShowWindow(s.output, s.result.empty() ? SW_HIDE : SW_SHOW);
         if (!s.result.empty())
@@ -73,9 +93,6 @@ namespace ui::layout
             ShowWindow(s.copyOverlay, SW_HIDE);
         if (s.deleteOverlay)
             ShowWindow(s.deleteOverlay, SW_HIDE);
-        s.settingsButton = rect(app::kWindowWidth - 108, 13, app::kWindowWidth - 78, 39);
-        s.minButton = rect(app::kWindowWidth - 74, 13, app::kWindowWidth - 44, 39);
-        s.closeButton = rect(app::kWindowWidth - 40, 13, app::kWindowWidth - 10, 39);
         s.startupCheck = rect(app::kWindowWidth - app::kMargin - 48, s.settingsRect.top + 17, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 35);
         s.topmostCheck = rect(app::kWindowWidth - app::kMargin - 48, s.settingsRect.top + 47, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 65);
         s.colorButton = rect(app::kWindowWidth - app::kMargin - 36, s.settingsRect.top + 75, app::kWindowWidth - app::kMargin - 16, s.settingsRect.top + 95);
