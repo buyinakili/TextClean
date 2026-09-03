@@ -88,13 +88,18 @@ namespace ui::layout
         {
             ShowWindow(s.colorInput, s.settings && s.colorPicker ? SW_SHOW : SW_HIDE);
             if (s.settings && s.colorPicker)
-                MoveWindow(s.colorInput, app::kMargin + 48, s.settingsRect.top + 134, 180, 24, TRUE);
+            {
+                s.colorInputRect = rect(app::kMargin + 48, s.settingsRect.top + 134, app::kMargin + 228, s.settingsRect.top + 158);
+                MoveWindow(s.colorInput, s.colorInputRect.left + 1, s.colorInputRect.top + 1, (s.colorInputRect.right - s.colorInputRect.left) - 2, (s.colorInputRect.bottom - s.colorInputRect.top) - 2, TRUE);
+            }
+            else
+                s.colorInputRect = rect(0, 0, 0, 0);
         }
         if (s.filterInput)
         {
             ShowWindow(s.filterInput, s.settings ? SW_SHOW : SW_HIDE);
             if (s.settings)
-                MoveWindow(s.filterInput, s.filterInputRect.left, s.filterInputRect.top, s.filterInputRect.right - s.filterInputRect.left, s.filterInputRect.bottom - s.filterInputRect.top, TRUE);
+                MoveWindow(s.filterInput, s.filterInputRect.left + 1, s.filterInputRect.top + 1, (s.filterInputRect.right - s.filterInputRect.left) - 2, (s.filterInputRect.bottom - s.filterInputRect.top) - 2, TRUE);
         }
         s.inputHeight = inputH;
         InvalidateRect(s.hwnd, nullptr, FALSE);

@@ -27,7 +27,7 @@ struct AppState {
     bool settings = false, topmost = true, startup = false, colorPicker = false, copied = false, compact = false, bubblePointerDown = false, bubbleMoved = false;
     COLORREF theme = kGreen;
     int hot = None, pressed = None, inputHeight = kInputMin, hotFilter = -1;
-    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{}, filterInputRect{};
+    RECT inputRect{}, outputRect{}, settingsRect{}, settingsButton{}, minButton{}, closeButton{}, clearButton{}, copyButton{}, deleteButton{}, startupCheck{}, topmostCheck{}, colorButton{}, applyColor{}, colorInputRect{}, filterInputRect{};
     POINT bubbleStartCursor{}, bubbleStartWindow{};
     SIZE expandedSize{};
     std::vector<RECT> presetColors;

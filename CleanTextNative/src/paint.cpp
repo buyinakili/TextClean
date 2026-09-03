@@ -30,6 +30,30 @@ namespace ui::paint
         Gdiplus::SolidBrush brush(Gdiplus::Color(255, GetRValue(color), GetGValue(color), GetBValue(color)));
         g.FillPath(&brush, &path);
     }
+    static COLORREF lightTheme(COLORREF color)
+    {
+        constexpr int themeWeight = 18;
+        constexpr int whiteWeight = 100 - themeWeight;
+        return RGB((GetRValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetGValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
+    }
+    static COLORREF settingsTheme(COLORREF color)
+    {
+        constexpr int themeWeight = 10;
+        constexpr int whiteWeight = 100 - themeWeight;
+        return RGB((GetRValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetGValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
+    }
+    static COLORREF settingsBorder(COLORREF color)
+    {
+        constexpr int themeWeight = 30;
+        constexpr int whiteWeight = 100 - themeWeight;
+        return RGB((GetRValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetGValue(color) * themeWeight + 255 * whiteWeight) / 100,
+                   (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
+    }
     void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme)
     {
         RECT client{};
@@ -200,7 +224,7 @@ namespace ui::paint
         headerClose(dc, s.closeButton);
         if (s.settings)
         {
-            fillRound(dc, s.settingsRect, kSoft, 10, kBorder);
+            fillRound(dc, s.settingsRect, settingsTheme(s.theme), 10, settingsBorder(s.theme));
             text(dc, L"\u5f00\u673a\u81ea\u542f\u52a8",
                  layout::rect(s.settingsRect.left + 16, s.startupCheck.top - 2, s.startupCheck.left - 14, s.startupCheck.bottom + 3),
                  DT_SINGLELINE | DT_VCENTER, kText, s.font);
@@ -221,13 +245,14 @@ namespace ui::paint
                 {
                     fillAntialiasedEllipse(dc, s.presetColors[i], colors[i]);
                 }
+                fillRound(dc, s.colorInputRect, RGB(255, 255, 255), 4, settingsBorder(s.theme));
             }
             const int filterLabelTop = s.settingsRect.top + (s.colorPicker ? 166 : 104);
             text(dc, L"过滤内容", layout::rect(s.settingsRect.left + 16, filterLabelTop, s.settingsRect.right - 16, filterLabelTop + 18), DT_SINGLELINE | DT_VCENTER, kText, s.font);
             for (size_t i = 0; i < s.filters.size(); ++i)
             {
                 const auto &item = s.filters[i];
-                fillRound(dc, item.button, item.selected ? RGB(217, 247, 229) : RGB(255, 255, 255), 6, kBorder);
+                fillRound(dc, item.button, item.selected ? lightTheme(s.theme) : RGB(255, 255, 255), 6, settingsBorder(s.theme));
                 text(dc, item.text.c_str(), layout::rect(item.button.left + 8, item.button.top, item.button.right - (item.builtin ? 8 : 16), item.button.bottom), DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, kText, s.font);
                 if (!item.builtin && s.hotFilter == static_cast<int>(i))
                 {
@@ -235,8 +260,9 @@ namespace ui::paint
                     text(dc, L"×", item.deleteButton, DT_CENTER | DT_VCENTER | DT_SINGLELINE, RGB(113, 129, 122), s.font);
                 }
             }
+            fillRound(dc, s.filterInputRect, RGB(255, 255, 255), 4, settingsBorder(s.theme));
         }
-        fillRound(dc, s.inputRect, RGB(255, 255, 255), 10, kBorder);
+        fillRound(dc, s.inputRect, RGB(255, 255, 255), 10, settingsBorder(s.theme));
         if (GetWindowTextLengthW(s.input) > 0)
         {
             fillRound(dc, s.clearButton, s.hot == ClearInput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
@@ -245,7 +271,7 @@ namespace ui::paint
         paintScroll(dc, s, s.input, s.inputRect);
         if (!s.result.empty())
         {
-            fillRound(dc, s.outputRect, RGB(255, 255, 255), 10, RGB(207, 235, 223));
+            fillRound(dc, s.outputRect, RGB(255, 255, 255), 10, settingsBorder(s.theme));
             fillRound(dc, s.deleteButton, s.hot == DeleteOutput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
             renderer.draw(dc, svg::Asset::Cancel, s.deleteButton, s.theme, true);
             fillRound(dc, s.copyButton, s.hot == CopyOutput ? RGB(207, 245, 229) : RGB(255, 255, 255), 14);
