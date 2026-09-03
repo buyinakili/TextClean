@@ -54,7 +54,15 @@ namespace ui::paint
                    (GetGValue(color) * themeWeight + 255 * whiteWeight) / 100,
                    (GetBValue(color) * themeWeight + 255 * whiteWeight) / 100);
     }
+    static COLORREF mix(COLORREF base, COLORREF tint, int tintWeight)
+    {
+        const int baseWeight = 100 - tintWeight;
+        return RGB((GetRValue(base) * baseWeight + GetRValue(tint) * tintWeight) / 100,
+                   (GetGValue(base) * baseWeight + GetGValue(tint) * tintWeight) / 100,
+                   (GetBValue(base) * baseWeight + GetBValue(tint) * tintWeight) / 100);
+    }
     static COLORREF surface(const AppState &s) { return s.darkMode ? RGB(31, 35, 40) : RGB(255, 255, 255); }
+    static COLORREF darkSettingsTheme(COLORREF theme) { return mix(RGB(31, 35, 40), theme, 28); }
     void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme, bool darkMode)
     {
         RECT client{};
@@ -204,7 +212,7 @@ namespace ui::paint
         renderer.draw(dc, svg::Asset::Logo, layout::rect(15, 8, 49, 42), s.theme, true);
         auto title = [&](RECT r, int id)
         {
-            fillRound(dc, r, s.hot == id ? (s.darkMode ? (s.pressed == id ? RGB(38, 53, 49) : RGB(49, 69, 63)) : (s.pressed == id ? RGB(205, 236, 221) : RGB(225, 245, 237))) : surface(s), 6);
+            fillRound(dc, r, s.hot == id ? (s.darkMode ? mix(surface(s), s.theme, s.pressed == id ? 20 : 30) : mix(surface(s), s.theme, s.pressed == id ? 20 : 12)) : surface(s), 6);
         };
         title(s.darkModeButton, DarkMode);
         title(s.infoButton, Info);
@@ -237,7 +245,7 @@ namespace ui::paint
         }
         if (s.settings)
         {
-            fillRound(dc, s.settingsRect, s.darkMode ? surface(s) : settingsTheme(s.theme), 10, settingsBorder(s.theme));
+            fillRound(dc, s.settingsRect, s.darkMode ? darkSettingsTheme(s.theme) : settingsTheme(s.theme), 10, settingsBorder(s.theme));
             text(dc, L"\u5f00\u673a\u81ea\u542f\u52a8",
                  layout::rect(s.settingsRect.left + 16, s.startupCheck.top - 2, s.startupCheck.left - 14, s.startupCheck.bottom + 3),
                  DT_SINGLELINE | DT_VCENTER, pageText, s.font);
@@ -265,7 +273,7 @@ namespace ui::paint
             for (size_t i = 0; i < s.filters.size(); ++i)
             {
                 const auto &item = s.filters[i];
-                fillRound(dc, item.button, s.darkMode ? surface(s) : (item.selected ? lightTheme(s.theme) : RGB(255, 255, 255)), 6, settingsBorder(s.theme));
+                fillRound(dc, item.button, s.darkMode ? (item.selected ? mix(surface(s), s.theme, 55) : surface(s)) : (item.selected ? lightTheme(s.theme) : RGB(255, 255, 255)), 6, settingsBorder(s.theme));
                 text(dc, item.text.c_str(), layout::rect(item.button.left + 8, item.button.top, item.button.right - (item.builtin ? 8 : 16), item.button.bottom), DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS, pageText, s.font);
                 if (!item.builtin && s.hotFilter == static_cast<int>(i))
                 {
