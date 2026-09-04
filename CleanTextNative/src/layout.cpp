@@ -67,16 +67,17 @@ namespace ui::layout
             s.settingsRect = rect(0, 0, 0, 0);
         s.inputRect = rect(app::kMargin, y, app::kWindowWidth - app::kMargin, y + inputH);
         y += inputH + 8;
+        const int bottomPadding = !s.settings && s.result.empty() ? 7 : 16;
         if (!s.result.empty())
         {
-            int outH = heightFor(s.output, app::kOutputMin, app::kOutputMax);
+            const int availableOutputHeight = app::kMaxWindowHeight - y - 8 - bottomPadding;
+            int outH = std::min(heightFor(s.output, app::kOutputMin, app::kOutputMax), std::max(app::kOutputMin, availableOutputHeight));
             s.outputRect = rect(app::kMargin, y, app::kWindowWidth - app::kMargin, y + outH);
             y += outH + 8;
         }
         else
             s.outputRect = rect(0, 0, 0, 0);
-        const int bottomPadding = !s.settings && s.result.empty() ? 7 : 16;
-        int clientH = std::clamp(y + bottomPadding, 96, 620);
+        int clientH = std::clamp(y + bottomPadding, 96, app::kMaxWindowHeight);
         RECT client{};
         GetClientRect(s.hwnd, &client);
         if (force || client.bottom != clientH)

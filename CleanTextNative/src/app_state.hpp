@@ -6,6 +6,7 @@ namespace app {
 constexpr int kWindowWidth = 360, kMargin = 14, kHeaderHeight = 57;
 constexpr int kInputMin = 50, kInputMax = 200, kOutputMin = 64, kOutputMax = 200;
 constexpr int kInitialWindowHeight = kHeaderHeight + kInputMin + 15;
+constexpr int kMaxWindowHeight = 620;
 constexpr COLORREF kGreen = RGB(45, 212, 163);
 constexpr COLORREF kDarkGreen = RGB(22, 135, 101);
 constexpr COLORREF kBorder = RGB(220, 232, 227);
