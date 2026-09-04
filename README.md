@@ -41,7 +41,6 @@ CleanText.exe --selftest
 净文是免费软件。如果你通过付费方式获得它，说明你可能受骗了。
 
 作者：nakili<br>
-GitHub：[buyinakili/TextClean](https://github.com/buyinakili/TextClean)
 
 ## 许可证
 
