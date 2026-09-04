@@ -123,14 +123,32 @@ namespace ui::paint
 
     void fillRound(HDC dc, RECT r, COLORREF color, int radius, COLORREF stroke)
     {
-        HBRUSH brush = CreateSolidBrush(color);
-        HPEN pen = CreatePen(PS_SOLID, 1, stroke == CLR_INVALID ? color : stroke);
-        HGDIOBJ ob = SelectObject(dc, brush), op = SelectObject(dc, pen);
-        RoundRect(dc, r.left, r.top, r.right, r.bottom, radius, radius);
-        SelectObject(dc, ob);
-        SelectObject(dc, op);
-        DeleteObject(brush);
-        DeleteObject(pen);
+        const float inset = stroke == CLR_INVALID ? 0.0f : 0.5f;
+        const float left = static_cast<float>(r.left) + inset;
+        const float top = static_cast<float>(r.top) + inset;
+        const float right = static_cast<float>(r.right) - inset;
+        const float bottom = static_cast<float>(r.bottom) - inset;
+        const float diameter = std::min(static_cast<float>(radius * 2), std::min(right - left, bottom - top));
+        if (diameter <= 0.0f)
+            return;
+
+        Gdiplus::GraphicsPath path;
+        path.AddArc(left, top, diameter, diameter, 180, 90);
+        path.AddArc(right - diameter, top, diameter, diameter, 270, 90);
+        path.AddArc(right - diameter, bottom - diameter, diameter, diameter, 0, 90);
+        path.AddArc(left, bottom - diameter, diameter, diameter, 90, 90);
+        path.CloseFigure();
+
+        Gdiplus::Graphics graphics(dc);
+        graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
+        Gdiplus::SolidBrush brush(Gdiplus::Color(255, GetRValue(color), GetGValue(color), GetBValue(color)));
+        graphics.FillPath(&brush, &path);
+        if (stroke != CLR_INVALID)
+        {
+            Gdiplus::Pen pen(Gdiplus::Color(255, GetRValue(stroke), GetGValue(stroke), GetBValue(stroke)), 1.0f);
+            graphics.DrawPath(&pen, &path);
+        }
     }
     static void text(HDC dc, const wchar_t *value, RECT r, UINT flags, COLORREF color, HFONT font)
     {
@@ -208,7 +226,7 @@ namespace ui::paint
             renderer.draw(dc, svg::Asset::Logo, layout::rect(11, 11, client.right - 11, client.bottom - 11), s.theme, true);
             return;
         }
-        fillRound(dc, layout::rect(0, 0, client.right, client.bottom), surface(s), 14, kBorder);
+        fillRound(dc, layout::rect(0, 0, client.right, client.bottom), surface(s), 14);
         renderer.draw(dc, svg::Asset::Logo, layout::rect(15, 8, 49, 42), s.theme, true);
         auto title = [&](RECT r, int id)
         {

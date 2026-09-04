@@ -23,7 +23,8 @@ namespace ui::layout
             s.bilibiliLink = rect(app::kMargin, 198, app::kMargin + 40, 238);
             s.githubLink = rect(app::kMargin + 46, 198, app::kMargin + 86, 238);
             s.supportButton = rect(app::kMargin, 248, app::kMargin + 112, 280);
-            s.paymentImage = rect(40, 324, 360, 644);
+            const int paymentLeft = (app::kWindowWidth - 320) / 2;
+            s.paymentImage = rect(paymentLeft, 324, paymentLeft + 320, 644);
             for (HWND control : {s.input, s.output, s.colorInput, s.filterInput, s.clearOverlay, s.copyOverlay, s.deleteOverlay}) if (control) ShowWindow(control, SW_HIDE);
             const int clientH = s.supportOpen ? 660 : 300;
             RECT client{}; GetClientRect(s.hwnd, &client);
@@ -74,7 +75,8 @@ namespace ui::layout
         }
         else
             s.outputRect = rect(0, 0, 0, 0);
-        int clientH = std::clamp(y + 16, 96, 620);
+        const int bottomPadding = !s.settings && s.result.empty() ? 7 : 16;
+        int clientH = std::clamp(y + bottomPadding, 96, 620);
         RECT client{};
         GetClientRect(s.hwnd, &client);
         if (force || client.bottom != clientH)
