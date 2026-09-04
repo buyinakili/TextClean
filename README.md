@@ -5,6 +5,7 @@
 ![平台](https://img.shields.io/badge/Windows-10%2F11-0078D4?logo=windows&logoColor=white)
 ![许可证](https://img.shields.io/badge/License-MIT-2DD4A3)
 ![净文界面](assets/CleanTextStart.png)
+[▶ 在 Bilibili 观看演示视频](https://www.bilibili.com/video/BV1JTtq63Ewc/)
 
 ## 使用
 
