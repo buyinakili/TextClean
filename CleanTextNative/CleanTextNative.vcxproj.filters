@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="core"><UniqueIdentifier>{19A3B6F1-2FC9-4C54-86B5-038A80F57401}</UniqueIdentifier></Filter>
+    <Filter Include="ui"><UniqueIdentifier>{D8F8057A-80D4-4B61-8A8C-E3B6A488CE72}</UniqueIdentifier></Filter>
+    <Filter Include="rendering"><UniqueIdentifier>{483F7A4A-D682-4FD8-9F8B-5A1585C7F960}</UniqueIdentifier></Filter>
+    <Filter Include="platform"><UniqueIdentifier>{FADBF595-45D3-4210-A7B3-5E1F9C10A8C6}</UniqueIdentifier></Filter>
+    <Filter Include="testing"><UniqueIdentifier>{C4D81D7E-0EE2-4F3C-BCDF-BB0B67D8B109}</UniqueIdentifier></Filter>
+    <Filter Include="resources"><UniqueIdentifier>{59DE2D30-4E98-4298-8A12-70D9C71D77D3}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="src\layout.cpp"><Filter>ui</Filter></ClCompile>
+    <ClCompile Include="src\paint.cpp"><Filter>ui</Filter></ClCompile>
+    <ClCompile Include="src\win32_window.cpp"><Filter>ui</Filter></ClCompile>
+    <ClCompile Include="src\icon_theming.cpp"><Filter>ui</Filter></ClCompile>
+    <ClCompile Include="src\svg_renderer.cpp"><Filter>rendering</Filter></ClCompile>
+    <ClCompile Include="src\system_integration.cpp"><Filter>platform</Filter></ClCompile>
+    <ClCompile Include="src\selftest.cpp"><Filter>testing</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\app_state.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="src\win32_base.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="src\graphics_backend.hpp"><Filter>rendering</Filter></ClInclude>
+    <ClInclude Include="src\layout.hpp"><Filter>ui</Filter></ClInclude>
+    <ClInclude Include="src\paint.hpp"><Filter>ui</Filter></ClInclude>
+    <ClInclude Include="src\win32_window.hpp"><Filter>ui</Filter></ClInclude>
+    <ClInclude Include="src\icon_theming.hpp"><Filter>ui</Filter></ClInclude>
+    <ClInclude Include="src\svg_renderer.hpp"><Filter>rendering</Filter></ClInclude>
+    <ClInclude Include="src\system_integration.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="src\selftest.hpp"><Filter>testing</Filter></ClInclude>
+    <ClInclude Include="resource.h"><Filter>resources</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup><ResourceCompile Include="CleanTextNative.rc"><Filter>resources</Filter></ResourceCompile></ItemGroup>
+</Project>

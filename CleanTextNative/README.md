@@ -41,8 +41,7 @@ build\x64\Release\CleanText.exe --selftest
 ```
 CleanTextNative/
 ├─ CleanTextNative.vcxproj    # MSBuild 工程
-├─ CleanTextNative.rc          # 资源：icon.ico + app.manifest + 4 个 SVG
-├─ icon.ico                    # 应用图标（IDI_APP）
+├─ CleanTextNative.rc          # 资源声明
 ├─ app.manifest                # asInvoker + PerMonitorV2 DPI
 ├─ src/                        # 模块化实现
 │  ├─ main.cpp                 # 启动、消息循环与清理
@@ -56,7 +55,9 @@ CleanTextNative/
 ├─ nanosvg.h                   # SVG 解析（header-only 实现）
 ├─ nanosvgrast.h               # SVG 光栅化（header-only 实现）
 ├─ resource.h                  # 资源 ID 定义
+├─ resources/                  # app_*、icon_*、support_* 嵌入资源
+├─ docs/architecture.md         # 模块职责与命名约定
 └─ build.bat                   # 一键构建脚本
 ```
 
-仓库根目录下的 SVG（`icon.svg` / `ic_public_*.svg`）会被 [`CleanTextNative.rc`](CleanTextNative.rc:1) 以 `RCDATA` 形式嵌入，路径是相对 `.rc` 文件的 `..\icon.svg`。
+`resources/` 中的 SVG、应用图标和二维码会被 [`CleanTextNative.rc`](CleanTextNative.rc:1) 以资源形式嵌入；发布时只需要根目录 `CleanText.exe`。
