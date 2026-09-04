@@ -63,6 +63,12 @@ namespace ui::paint
     }
     static COLORREF surface(const AppState &s) { return s.darkMode ? RGB(31, 35, 40) : RGB(255, 255, 255); }
     static COLORREF darkSettingsTheme(COLORREF theme) { return mix(RGB(31, 35, 40), theme, 28); }
+    static COLORREF actionHover(const AppState &s, int id)
+    {
+        if (s.hot != id)
+            return surface(s);
+        return mix(surface(s), s.theme, s.darkMode ? 30 : 22);
+    }
     void paintCompactLayered(HWND hwnd, svg::Renderer &renderer, COLORREF theme, bool darkMode)
     {
         RECT client{};
@@ -304,16 +310,16 @@ namespace ui::paint
         fillRound(dc, s.inputRect, surface(s), 10, settingsBorder(s.theme));
         if (GetWindowTextLengthW(s.input) > 0)
         {
-            fillRound(dc, s.clearButton, s.darkMode ? surface(s) : (s.hot == ClearInput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
+            fillRound(dc, s.clearButton, actionHover(s, ClearInput), 14);
             renderer.draw(dc, svg::Asset::Cancel, s.clearButton, s.theme, true);
         }
         paintScroll(dc, s, s.input, s.inputRect);
         if (!s.result.empty())
         {
             fillRound(dc, s.outputRect, surface(s), 10, settingsBorder(s.theme));
-            fillRound(dc, s.deleteButton, s.darkMode ? surface(s) : (s.hot == DeleteOutput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
+            fillRound(dc, s.deleteButton, actionHover(s, DeleteOutput), 14);
             renderer.draw(dc, svg::Asset::Cancel, s.deleteButton, s.theme, true);
-            fillRound(dc, s.copyButton, s.darkMode ? surface(s) : (s.hot == CopyOutput ? RGB(207, 245, 229) : RGB(255, 255, 255)), 14);
+            fillRound(dc, s.copyButton, actionHover(s, CopyOutput), 14);
             renderer.draw(dc, svg::Asset::Copy, s.copyButton, s.theme, true);
             if (s.copied)
             {
